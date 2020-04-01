@@ -27,10 +27,8 @@ class ModelView(SparseGridLayout):
         self.models_scroll.add_widget(self.models_widget)
         self.models_widget.bind(minimum_height=self.models_widget.setter('height'))
 
-        self.add_entry(Label(text='Model Editor', font_size='15sp', color=[0, 0, 0, 1]), position=(10, 0), shape=(1, 1))
-
         self.editor_controls = SparseGridLayout(rows=1, cols=3)
-        self.add_entry(self.editor_controls, position=(9, 0), shape=(1, 1), padding_x=(0.1, 0.1))
+        self.add_entry(self.editor_controls, position=(10, 0), shape=(1, 1), padding_x=(0.1, 0.1))
 
         self.new_button = Button(text="New")
         self.new_button.on_press = self.new_model
@@ -46,7 +44,7 @@ class ModelView(SparseGridLayout):
 
         self.active_model = None
         self.model_editor = ModelEditorView(self.model_manager)
-        self.add_entry(self.model_editor, position=(0, 0), shape=(9, 1))
+        self.add_entry(self.model_editor, position=(0, 0), shape=(10, 1))
         self.hide_entry(self.model_editor)
 
     def update_model_definitions(self):
