@@ -1,4 +1,4 @@
-from app.gui.sparse_grid_layout import SparseGridLayout
+from app.gui.util.sparse_grid_layout import SparseGridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from app.training.model.model_manager import ModelManager
@@ -13,15 +13,15 @@ class ModelEditorView(SparseGridLayout):
         self.active_model = None
         self.model_definition = None
 
-        super().__init__(rows=10, cols=1)
+        super().__init__(rows=9, cols=1)
 
         self.background = Label()
         self.add_entry(self.background, position=(0, 0), shape=(9, 1), padding_x=(0.01, 0.01), padding_y=(0, 0.01), color=(0.3, 0.3, 0.3, 1))
 
-        self.add_entry(Label(text='Model Editor', font_size='15sp', color=[0, 0, 0, 1], bold=True), position=(9, 0), shape=(1, 1))
+        self.add_entry(Label(text='Model Editor', font_size='15sp', color=[1, 1, 1, 1], bold=True), position=(8, 0), shape=(1, 1))
 
         self.encoder_layout = SparseGridLayout(rows=2, cols=4)
-        self.encoder_layout.add_entry(Label(text="Encoder", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 1), shape=(1, 2))
+        self.encoder_layout.add_entry(Label(text="Encoder", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 0), shape=(1, 1))
         self.encoder_layout.add_entry(Label(text="LSTM Arch:", font_size='15sp', color=[0., 0., 0., 1.]), position=(0, 0), shape=(1, 1))
         self.enc_lstm_arch = TextInput(text="", multiline=False)
         self.enc_lstm_arch.bind(focus=self.update_enc_lstm_arch)
@@ -33,7 +33,7 @@ class ModelEditorView(SparseGridLayout):
         self.add_entry(self.encoder_layout, position=(6, 0), shape=(3, 1))
 
         self.memory_layout = SparseGridLayout(rows=2, cols=6)
-        self.memory_layout.add_entry(Label(text="Memory", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 2), shape=(1, 2))
+        self.memory_layout.add_entry(Label(text="Memory", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 0), shape=(1, 1.5))
         self.memory_layout.add_entry(Label(text="Hidden:", font_size='15sp', color=[0., 0., 0., 1.]), position=(0, 0), shape=(1, 1))
         self.mem_hidden = TextInput(text="", multiline=False)
         self.mem_hidden.bind(focus=self.update_mem_hidden)
@@ -49,7 +49,7 @@ class ModelEditorView(SparseGridLayout):
         self.add_entry(self.memory_layout, position=(3, 0), shape=(3, 1))
 
         self.decoder_layout = SparseGridLayout(rows=2, cols=4)
-        self.decoder_layout.add_entry(Label(text="Decoder", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 1), shape=(1, 2))
+        self.decoder_layout.add_entry(Label(text="Decoder", font_size='15sp', bold=True, color=[0., 0., 0., 1.]), position=(1, 0), shape=(1, 1))
         self.decoder_layout.add_entry(Label(text="LSTM Arch:", font_size='15sp', color=[0., 0., 0., 1.]), position=(0, 0), shape=(1, 1))
         self.dec_lstm_arch = TextInput(text="", multiline=False)
         self.dec_lstm_arch.bind(focus=self.update_dec_lstm_arch)
@@ -60,8 +60,8 @@ class ModelEditorView(SparseGridLayout):
         self.decoder_layout.add_entry(self.dec_tail_arch, position=(0, 3), shape=(1, 1), padding_x=(0, 0.02), padding_y=(0.1, 0.1))
         self.add_entry(self.decoder_layout, position=(0, 0), shape=(3, 1))
 
-        self.csv_validator = re.compile("(\d+,?)+")
-        self.int_validator = re.compile("\d+")
+        self.csv_validator = re.compile(r"^(\d+,?)+$")
+        self.int_validator = re.compile(r"^\d+$")
 
     def update_active_model(self, new_model_id):
         self.active_model = new_model_id
@@ -76,51 +76,58 @@ class ModelEditorView(SparseGridLayout):
 
     def update_enc_lstm_arch(self, instance, value):
         if not value:
-            if not self.csv_validator.match(self.enc_lstm_arch.text):
+            clean = self.enc_lstm_arch.text.replace(" ", "")
+            if not bool(self.csv_validator.match(clean)):
                 raise Exception("Invalid encoder lstm arch")
-            self.model_definition.encoder_definition.lstm_arch = str.split(str.strip(self.enc_lstm_arch.text), ",")
+            self.model_definition.encoder_definition.lstm_arch = str.split(clean, ",")
             self.update_model()
 
     def update_enc_tail_arch(self, instance, value):
         if not value:
-            if not self.csv_validator.match(self.enc_tail_arch.text):
+            clean = self.enc_tail_arch.text.replace(" ", "")
+            if not bool(self.csv_validator.match(clean)):
                 raise Exception("Invalid encoder tail arch")
-            self.model_definition.encoder_definition.tail_arch = str.split(str.strip(self.enc_tail_arch.text), ",")
+            self.model_definition.encoder_definition.tail_arch = str.split(clean, ",")
             self.update_model()
 
     def update_mem_hidden(self, instance, value):
         if not value:
-            if not self.int_validator.match(self.mem_hidden.text):
+            clean = self.mem_hidden.text.replace(" ", "")
+            if not bool(self.int_validator.match(clean)):
                 raise Exception("Invalid memory hidden")
-            self.model_definition.memory_definition.hidden_n = self.mem_hidden.text
+            self.model_definition.memory_definition.hidden_n = int(clean)
             self.update_model()
 
     def update_mem_loop(self, instance, value):
         if not value:
-            if not self.int_validator.match(self.mem_loop.text):
+            clean = self.mem_loop.text.replace(" ", "")
+            if not bool(self.int_validator.match(clean)):
                 raise Exception("Invalid memory loop")
-            self.model_definition.memory_definition.loop_n = self.mem_loop.text
+            self.model_definition.memory_definition.loop_n = int(clean)
             self.update_model()
 
     def update_mem_tail_arch(self, instance, value):
         if not value:
-            if not self.csv_validator.match(self.mem_tail_arch.text):
+            clean = self.mem_tail_arch.text.replace(" ", "")
+            if not bool(self.csv_validator.match(clean)):
                 raise Exception("Invalid memory tail arch")
-            self.model_definition.memory_definition.tail_arch = str.split(str.strip(self.mem_tail_arch.text), ",")
+            self.model_definition.memory_definition.tail_arch = str.split(clean, ",")
             self.update_model()
 
     def update_dec_lstm_arch(self, instance, value):
         if not value:
-            if not self.csv_validator.match(self.dec_lstm_arch.text):
+            clean = self.dec_lstm_arch.text.replace(" ", "")
+            if not bool(self.csv_validator.match(clean)):
                 raise Exception("Invalid decoder lstm arch")
-            self.model_definition.decoder_definition.lstm_arch = str.split(str.strip(self.dec_lstm_arch.text), ",")
+            self.model_definition.decoder_definition.lstm_arch = str.split(clean, ",")
             self.update_model()
 
     def update_dec_tail_arch(self, instance, value):
         if not value:
-            if not self.csv_validator.match(self.dec_tail_arch.text):
+            clean = self.dec_tail_arch.text.replace(" ", "")
+            if not bool(self.csv_validator.match(clean)):
                 raise Exception("Invalid decoder tail arch")
-            self.model_definition.decoder_definition.tail_arch = str.split(str.strip(self.dec_tail_arch.text), ",")
+            self.model_definition.decoder_definition.tail_arch = str.split(clean, ",")
             self.update_model()
 
     def update_model(self):

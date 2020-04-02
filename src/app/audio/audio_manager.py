@@ -74,7 +74,7 @@ class AudioManager(object):
         self.is_recording = True
 
     def all_audio_ids(self):
-        return list(self.unsaved_audio.keys()) + self.audio_files
+        return sorted(list(self.unsaved_audio.keys()) + self.audio_files)
 
     def generate_next_name(self):
         greatest = 0

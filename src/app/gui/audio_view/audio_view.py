@@ -1,5 +1,5 @@
-from app.gui.sparse_grid_layout import SparseGridLayout
-from app.gui.audio_entry import AudioEntry
+from app.gui.util.sparse_grid_layout import SparseGridLayout
+from app.gui.audio_view.audio_entry import AudioEntry
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button

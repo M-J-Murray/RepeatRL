@@ -1,4 +1,4 @@
-from app.gui.sparse_grid_layout import SparseGridLayout
+from app.gui.util.sparse_grid_layout import SparseGridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 
@@ -6,16 +6,17 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 
 from app.training.model.model_manager import ModelManager
-from app.gui.model_entry import ModelEntry
-from app.gui.model_editor_view import ModelEditorView
+from app.gui.model_view.model_entry import ModelEntry
+from app.gui.model_view.model_editor_view import ModelEditorView
 
 from functools import partial
 
 
 class ModelView(SparseGridLayout):
 
-    def __init__(self, model_manager: ModelManager):
+    def __init__(self, model_manager: ModelManager, update_model_entries):
         self.model_manager = model_manager
+        self.update_model_entries = update_model_entries
 
         super().__init__(rows=20, cols=1)
         self.add_entry(Label(text='Models', font_size='20sp', color=[0, 0, 0, 1]), position=(18, 0), shape=(2, 1))
@@ -42,6 +43,7 @@ class ModelView(SparseGridLayout):
         self.close_button = Button(text="Close")
         self.close_button.on_press = self.close_model
         self.editor_controls.add_entry(self.close_button, position=(0, 2), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
+        self.editor_controls.hide_entry(self.close_button)
 
         self.model_editor = ModelEditorView(self.model_manager, self.update_model_definitions)
         self.add_entry(self.model_editor, position=(0, 0), shape=(10, 1))
@@ -57,8 +59,12 @@ class ModelView(SparseGridLayout):
         self.models_widget.clear_widgets()
         for model_id in self.model_manager.all_model_ids():
             is_active = model_id == self.model_editor.active_model
-            model_entry = ModelEntry(model_id, is_active, self.model_manager, partial(self.open_model, model_id), self.check_hide_save, self.check_hide_delete)
+            model_entry = ModelEntry(model_id, is_active, self.model_manager, partial(self.open_model, model_id), self.check_hide_save, self.check_hide_delete, self.check_update_editor_name)
             self.models_widget.add_widget(model_entry)
+
+    def check_update_editor_name(self, old_id, new_id):
+        if self.model_editor.active_model == old_id:
+            self.model_editor.active_model = new_id
 
     def check_hide_delete(self, model_id):
         if model_id == self.model_editor.active_model:
@@ -68,11 +74,13 @@ class ModelView(SparseGridLayout):
 
     def check_hide_save(self, model_id):
         if model_id == self.model_editor.active_model:
+            self.update_model_entries()
             self.editor_controls.hide_entry(self.save_button)
 
     def update_active_model(self, model_id):
         if model_id is None:
             self.hide_entry(self.model_editor)
+            self.model_editor.active_model = None
         else:
             self.model_editor.update_active_model(model_id)
             self.show_entry(self.model_editor)
@@ -80,13 +88,17 @@ class ModelView(SparseGridLayout):
 
     def new_model(self):
         self.update_active_model(self.model_manager.new_model())
+        self.editor_controls.show_entry(self.close_button)
 
     def save_model(self):
         self.model_manager.save_model(self.model_editor.active_model)
+        self.update_model_entries()
         self.update_model_definitions()
 
     def open_model(self, model_id):
         self.update_active_model(model_id)
+        self.editor_controls.show_entry(self.close_button)
 
     def close_model(self):
         self.update_active_model(None)
+        self.editor_controls.hide_entry(self.close_button)

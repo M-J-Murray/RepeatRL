@@ -1,1 +1,1 @@
-{"memory_definition": "{\"loop_n\": 1, \"hidden_n\": 1, \"tail_arch\": [1, 1]}", "encoder_definition": "{\"tail_arch\": [1, 1], \"is_encoder\": true, \"lstm_arch\": [1, 1]}", "decoder_definition": "{\"tail_arch\": [1, 1], \"is_encoder\": false, \"lstm_arch\": [1, 1]}"}
+{"memory_definition": "{\"loop_n\": 1, \"hidden_n\": 1, \"tail_arch\": [1, 1]}", "decoder_definition": "{\"lstm_arch\": [1, 1], \"tail_arch\": [1, 1], \"is_encoder\": false}", "encoder_definition": "{\"lstm_arch\": [1, 1], \"tail_arch\": [1, 1], \"is_encoder\": true}"}

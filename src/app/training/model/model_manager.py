@@ -3,6 +3,7 @@ import os
 from app.training.model.model_definition import ModelDefinition
 from app.training.model.model_definition import from_json
 
+
 def is_int(value):
     try:
         int(value)
@@ -18,16 +19,16 @@ class ModelManager(object):
         self.save_dir = save_dir
         self.unsaved_models = OrderedDict()
         self.model_files = []
-        self.check_for_saved_audio()
+        self.check_for_saved_models()
 
-    def check_for_saved_audio(self):
+    def check_for_saved_models(self):
         for f in os.listdir(self.save_dir):
             path = os.path.join(self.save_dir, f)
             if os.path.isfile(path):
                 self.model_files.append(f[:-5])
 
     def all_model_ids(self):
-        return list(self.unsaved_models) + self.model_files
+        return sorted(list(self.unsaved_models) + self.model_files)
 
     def generate_model_id(self):
         greatest = 0
@@ -71,17 +72,17 @@ class ModelManager(object):
             os.remove(self.save_dir + "/" + model_id + ".json")
             del self.model_files[self.model_files.index(model_id)]
 
-    def rename_model(self, audio_id, new_id):
-        if audio_id in self.unsaved_models:
+    def rename_model(self, model_id, new_id):
+        if model_id in self.unsaved_models:
             if new_id in self.all_model_ids():
-                raise Exception("New audio name is already taken")
+                raise Exception("New model name is already taken")
             else:
-                self.unsaved_models[new_id] = self.unsaved_models[audio_id]
-                del self.unsaved_models[audio_id]
+                self.unsaved_models[new_id] = self.unsaved_models[model_id]
+                del self.unsaved_models[model_id]
         else:
             if new_id in self.all_model_ids():
-                raise Exception("New audio name is already taken")
+                raise Exception("New model name is already taken")
             else:
-                os.rename(self.save_dir + "/" + audio_id + ".json",
+                os.rename(self.save_dir + "/" + model_id + ".json",
                           self.save_dir + "/" + new_id + ".json")
-                self.model_files[self.model_files.index(audio_id)] = new_id
+                self.model_files[self.model_files.index(model_id)] = new_id

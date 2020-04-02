@@ -1,4 +1,4 @@
-from app.gui.sparse_grid_layout import SparseGridLayout
+from app.gui.util.sparse_grid_layout import SparseGridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -8,13 +8,14 @@ from app.training.model.model_manager import ModelManager
 
 class ModelEntry(SparseGridLayout):
 
-    def __init__(self, model_id, is_active, model_manager: ModelManager, open_callback, save_callback, delete_callback):
+    def __init__(self, model_id, is_active, model_manager: ModelManager, open_callback, save_callback, delete_callback, rename_callback):
         super().__init__(rows=1, cols=6, size_hint_y=None, height=40)
         self.model_id = model_id
         self.model_manager = model_manager
         self.open_callback = open_callback
         self.save_callback = save_callback
         self.delete_callback = delete_callback
+        self.rename_callback = rename_callback
 
         background_color = (0.3, 0.3, 0.3, 1)
         if is_active:
@@ -50,7 +51,7 @@ class ModelEntry(SparseGridLayout):
             self.model_label = TextInput(text=self.model_id, multiline=False)
             self.model_label.bind(focus=self.update_model_label)
             self.model_label.on_touch_down(touch)
-            self.add_entry(self.model_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05), color=(0.3, 0.3, 0.3, 1))
+            self.add_entry(self.model_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05))
 
     def update_model_label(self, instance, value):
         if not value:
@@ -58,11 +59,12 @@ class ModelEntry(SparseGridLayout):
             self.remove_entry(self.model_label)
             if new_id != self.model_id:
                 self.model_manager.rename_model(self.model_id, new_id)
+                self.rename_callback(self.model_id, new_id)
                 self.model_id = new_id
             self.model_label = Label(text=self.model_id, halign="left", valign="middle", padding_x=10)
             self.model_label.bind(size=self.model_label.setter('text_size'))
             self.model_label.on_touch_down = self.on_label_press
-            self.add_entry(self.model_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05), color=(0.3, 0.3, 0.3, 1))
+            self.add_entry(self.model_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05))
 
     def save_model(self):
         self.model_manager.save_model(self.model_id)

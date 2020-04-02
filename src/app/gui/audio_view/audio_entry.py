@@ -1,4 +1,4 @@
-from app.gui.sparse_grid_layout import SparseGridLayout
+from app.gui.util.sparse_grid_layout import SparseGridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
