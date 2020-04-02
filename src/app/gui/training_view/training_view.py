@@ -13,11 +13,11 @@ from functools import partial
 
 class TrainingView(SparseGridLayout):
 
-    def __init__(self, audio_manager, model_manager, training_manager, trained_model_manager):
+    def __init__(self, audio_manager, model_manager, training_manager, execution_manager):
         self.audio_manager = audio_manager
         self.model_manager = model_manager
         self.training_manager = training_manager
-        self.trained_model_manager = trained_model_manager
+        self.execution_manager = execution_manager
         super().__init__(rows=20, cols=1)
         self.add_entry(Label(text='Training', font_size='20sp', color=[0, 0, 0, 1]), position=(18, 0), shape=(2, 1))
 
@@ -45,7 +45,7 @@ class TrainingView(SparseGridLayout):
         self.editor_controls.add_entry(self.close_button, position=(0, 2), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
         self.editor_controls.hide_entry(self.close_button)
 
-        self.training_editor = TrainingEditorView(self.model_manager, self.training_manager, self.update_training_definitions)
+        self.training_editor = TrainingEditorView(self.model_manager, self.training_manager, self.execution_manager, self.update_training_definitions)
         self.add_entry(self.training_editor, position=(0, 0), shape=(10, 1))
         self.hide_entry(self.training_editor)
 
@@ -75,6 +75,7 @@ class TrainingView(SparseGridLayout):
     def check_hide_save(self, training_id):
         if training_id == self.training_editor.active_training:
             self.editor_controls.hide_entry(self.save_button)
+            self.training_editor.update_start_button()
 
     def update_active_training(self, training_id):
         if training_id is None:
@@ -91,6 +92,7 @@ class TrainingView(SparseGridLayout):
 
     def save_training(self):
         self.training_manager.save_training(self.training_editor.active_training)
+        self.training_editor.update_start_button()
         self.update_training_definitions()
 
     def open_training(self, training_id):

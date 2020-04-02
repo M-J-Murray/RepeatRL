@@ -6,6 +6,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from app.training.model.model_manager import ModelManager
 from app.training.training_manager import TrainingManager
+from app.training.execution_manager import ExecutionManager
 from kivy.uix.dropdown import DropDown
 from kivy.graphics import Color, Rectangle
 
@@ -15,9 +16,10 @@ import re
 
 class TrainingEditorView(SparseGridLayout):
 
-    def __init__(self, model_manager: ModelManager, training_manager: TrainingManager, refresh_callback):
+    def __init__(self, model_manager: ModelManager, training_manager: TrainingManager, execution_manager: ExecutionManager, refresh_callback):
         self.model_manager = model_manager
         self.training_manager = training_manager
+        self.execution_manager = execution_manager
         self.active_training = None
         self.training_definition = None
         self.refresh_callback = refresh_callback
@@ -58,6 +60,10 @@ class TrainingEditorView(SparseGridLayout):
         self.iterations.bind(focus=self.update_learning_rate)
         self.add_entry(self.iterations, position=(1, 1), shape=(1, 1), padding_x=(0, 0.1), padding_y=(0.03, 0.03))
 
+        self.start_training_button = Button(text="Start Training")
+        self.start_training_button.bind(on_press=self.start_training)
+        self.add_entry(self.start_training_button, position=(0, 0.6), shape=(1, 1), padding_x=(0, 0.1), padding_y=(0.03, 0.03))
+
         self.float_regex = re.compile(r"^\d+(.\d+)?$")
         self.int_regex = re.compile(r"^\d+$")
 
@@ -80,6 +86,14 @@ class TrainingEditorView(SparseGridLayout):
         self.learning_rate.text = str(self.training_definition.learning_rate)
         self.test_split.text = str(self.training_definition.test_split)
         self.iterations.text = str(self.training_definition.iterations)
+        self.update_start_button()
+
+    def update_start_button(self):
+        if self.active_training in self.training_manager.unsaved_training or self.training_definition.model_id is None:
+            self.hide_entry(self.start_training_button)
+        else:
+            self.show_entry(self.start_training_button)
+        self.start_training_button.disabled = self.active_training in self.execution_manager.active_models
 
     def update_model_id(self, label, touch):
         if label.collide_point(*touch.pos):
@@ -88,6 +102,7 @@ class TrainingEditorView(SparseGridLayout):
             if label.text != self.training_definition.model_id:
                 self.training_definition.model_id = label.text
                 self.training_manager.update_training(self.active_training, self.training_definition)
+                self.update_start_button()
                 self.refresh_callback()
 
     def update_learning_rate(self, instance, value):
@@ -99,6 +114,7 @@ class TrainingEditorView(SparseGridLayout):
             if new_val != self.training_definition.learning_rate:
                 self.training_definition.learning_rate = new_val
                 self.training_manager.update_training(self.active_training, self.training_definition)
+                self.update_start_button()
                 self.refresh_callback()
 
     def update_test_split(self, instance, value):
@@ -110,6 +126,7 @@ class TrainingEditorView(SparseGridLayout):
             if new_val != self.training_definition.test_split:
                 self.training_definition.test_split = new_val
                 self.training_manager.update_training(self.active_training, self.training_definition)
+                self.update_start_button()
                 self.refresh_callback()
 
     def update_iterations(self, instance, value):
@@ -121,4 +138,9 @@ class TrainingEditorView(SparseGridLayout):
             if new_val != self.training_definition.iterations:
                 self.training_definition.iterations = new_val
                 self.training_manager.update_training(self.active_training, self.training_definition)
+                self.update_start_button()
                 self.refresh_callback()
+
+    def start_training(self, instance):
+        instance.disabled = True
+        self.execution_manager.start_training(self.active_training)

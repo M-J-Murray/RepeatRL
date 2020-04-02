@@ -26,11 +26,12 @@ class RepeatException(ExceptionHandler):
 
 class RepeatApp(App):
 
-    def __init__(self, audio_manager, model_manager, training_manager, trained_model_manager, **kwargs):
+    def __init__(self, audio_manager, model_manager, training_manager, trained_model_manager, execution_manager, **kwargs):
         self.audio_manager = audio_manager
         self.model_manager = model_manager
         self.training_manager = training_manager
         self.trained_model_manager = trained_model_manager
+        self.execution_manager = execution_manager
 
         self.error_label = Label(text="")
         self.error_popup = Popup(title="Error", content=self.error_label, auto_dismiss=True, pos_hint={"x": 0.2, "y": 0.4}, size_hint=(0.6, 0.2))
@@ -45,7 +46,7 @@ class RepeatApp(App):
 
         layout = SparseGridLayout(rows=1, cols=4)
         layout.add_entry(AudioView(self.audio_manager), position=(0, 0), shape=(1, 1))
-        training_view = TrainingView(self.audio_manager, self.model_manager, self.training_manager, self.trained_model_manager)
+        training_view = TrainingView(self.audio_manager, self.model_manager, self.training_manager, self.execution_manager)
         layout.add_entry(training_view, position=(0, 2), shape=(1, 1))
         layout.add_entry(ModelView(self.model_manager, training_view.training_editor.update_model_entries), position=(0, 1), shape=(1, 1))
         layout.add_entry(TrainedModelView(self.audio_manager, self.model_manager, self.training_manager, self.trained_model_manager), position=(0, 3), shape=(1, 1))
