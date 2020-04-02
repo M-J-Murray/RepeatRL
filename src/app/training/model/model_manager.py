@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import os
 from app.training.model.model_definition import ModelDefinition
-
+from app.training.model.model_definition import from_json
 
 def is_int(value):
     try:
@@ -18,6 +18,13 @@ class ModelManager(object):
         self.save_dir = save_dir
         self.unsaved_models = OrderedDict()
         self.model_files = []
+        self.check_for_saved_audio()
+
+    def check_for_saved_audio(self):
+        for f in os.listdir(self.save_dir):
+            path = os.path.join(self.save_dir, f)
+            if os.path.isfile(path):
+                self.model_files.append(f[:-5])
 
     def all_model_ids(self):
         return list(self.unsaved_models) + self.model_files
@@ -38,7 +45,24 @@ class ModelManager(object):
         return model_id
 
     def save_model(self, model_id):
-        pass
+        model_json = self.unsaved_models[model_id].to_json()
+        with open(self.save_dir + "/" + model_id + ".json", "w") as file:
+            file.write(model_json)
+        del self.unsaved_models[model_id]
+        self.model_files.append(model_id)
+
+    def load_model(self, model_id):
+        if model_id in self.unsaved_models:
+            return self.unsaved_models[model_id]
+
+        with open(self.save_dir + "/" + model_id + ".json", "r") as file:
+            model_json = file.readline()
+        return from_json(model_json)
+
+    def update_model(self, model_id, model_definition):
+        if model_id not in self.unsaved_models:
+            del self.model_files[self.model_files.index(model_id)]
+        self.unsaved_models[model_id] = model_definition
 
     def delete_model(self, model_id):
         if model_id in self.unsaved_models:

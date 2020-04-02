@@ -68,5 +68,6 @@ class SparseGridLayout(RelativeLayout):
         super().remove_widget(widget)
         del self.children_position[widget]
         del self.children_shape[widget]
-        del self.children_padding[widget]
+        del self.children_padding_x[widget]
+        del self.children_padding_y[widget]
         del self.children_color[widget]

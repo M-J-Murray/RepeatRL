@@ -38,20 +38,21 @@ class AudioEntry(SparseGridLayout):
         if self.audio_label.collide_point(*touch.pos):
             self.remove_entry(self.audio_label)
             self.audio_label = TextInput(text=self.audio_id, multiline=False)
-            self.audio_label.on_text_validate = self.update_audio_label
+            self.audio_label.bind(focus=self.update_audio_label)
             self.audio_label.on_touch_down(touch)
             self.add_entry(self.audio_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05), color=(0.3, 0.3, 0.3, 1))
 
-    def update_audio_label(self):
-        new_id = self.audio_label.text
-        self.remove_entry(self.audio_label)
-        if new_id != self.audio_id:
-            self.audio_manager.rename_audio(self.audio_id, new_id)
-            self.audio_id = new_id
-        self.audio_label = Label(text=self.audio_id, halign="left", valign="middle", padding_x=10)
-        self.audio_label.bind(size=self.audio_label.setter('text_size'))
-        self.audio_label.on_touch_down = self.on_label_press
-        self.add_entry(self.audio_label, position=(0, 0), shape=(1, 3), padding=(0.01, 0.05), color=(0.3, 0.3, 0.3, 1))
+    def update_audio_label(self, instance, value):
+        if not value:
+            new_id = self.audio_label.text
+            self.remove_entry(self.audio_label)
+            if new_id != self.audio_id:
+                self.audio_manager.rename_audio(self.audio_id, new_id)
+                self.audio_id = new_id
+            self.audio_label = Label(text=self.audio_id, halign="left", valign="middle", padding_x=10)
+            self.audio_label.bind(size=self.audio_label.setter('text_size'))
+            self.audio_label.on_touch_down = self.on_label_press
+            self.add_entry(self.audio_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05), color=(0.3, 0.3, 0.3, 1))
 
     def update_stop_to_play(self):
         self.play_button.text = "Play"
