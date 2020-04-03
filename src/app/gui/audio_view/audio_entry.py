@@ -4,6 +4,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 
 from app.audio.audio_manager import AudioManager
+from app.event_listener import EventListener
 
 
 class AudioEntry(SparseGridLayout):
@@ -74,3 +75,4 @@ class AudioEntry(SparseGridLayout):
     def delete_clip(self):
         self.audio_manager.delete_audio(self.audio_id)
         self.parent.remove_widget(self)
+        EventListener.trigger_event("update_audio_entries")

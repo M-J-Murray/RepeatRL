@@ -4,7 +4,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-
+from app.event_listener import EventListener
 from app.audio.audio_manager import AudioManager
 
 
@@ -18,23 +18,23 @@ class AudioView(SparseGridLayout):
                        shape=(1, 1))
 
         self.clip_scroll = ScrollView()
-        self.add_entry(self.clip_scroll, position=(3, 0), shape=(6, 1), padding_x=(0.1, 0.1), color=(0.6, 0.6, 0.6, 1))
+        self.add_entry(self.clip_scroll, position=(1, 0), shape=(8, 1), padding_x=(0.1, 0.1), color=(0.6, 0.6, 0.6, 1))
 
         self.clips_widget = GridLayout(cols=1, spacing=2, size_hint_y=None)
         self.clip_scroll.add_widget(self.clips_widget)
         self.clips_widget.bind(minimum_height=self.clips_widget.setter('height'))
         self.update_recording_entries()
 
-        self.control_widget = SparseGridLayout(rows=2, cols=4)
-        self.add_entry(self.control_widget, position=(0, 0), shape=(3, 1))
+        self.control_widget = SparseGridLayout(rows=1, cols=4)
+        self.add_entry(self.control_widget, position=(0, 0), shape=(1, 1))
 
         self.record_button = Button(text="Record")
         self.record_button.on_press = self.record_callback
-        self.control_widget.add_entry(self.record_button, position=(1, 1), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
+        self.control_widget.add_entry(self.record_button, position=(0, 1), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
 
         self.save_all_button = Button(text="Save All")
         self.save_all_button.on_press = self.save_all_callback
-        self.control_widget.add_entry(self.save_all_button, position=(1, 2), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
+        self.control_widget.add_entry(self.save_all_button, position=(0, 2), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
 
     def update_recording_entries(self):
         self.clips_widget.clear_widgets()
@@ -56,3 +56,4 @@ class AudioView(SparseGridLayout):
         self.record_button.text = "Record"
         self.audio_manager.stop_recording()
         self.update_recording_entries()
+        EventListener.trigger_event("update_audio_entries")

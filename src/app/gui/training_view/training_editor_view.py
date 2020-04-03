@@ -9,6 +9,7 @@ from app.training.training_manager import TrainingManager
 from app.training.execution_manager import ExecutionManager
 from kivy.uix.dropdown import DropDown
 from kivy.graphics import Color, Rectangle
+from app.event_listener import EventListener
 
 from functools import partial
 import re
@@ -16,13 +17,12 @@ import re
 
 class TrainingEditorView(SparseGridLayout):
 
-    def __init__(self, model_manager: ModelManager, training_manager: TrainingManager, execution_manager: ExecutionManager, refresh_callback):
+    def __init__(self, model_manager: ModelManager, training_manager: TrainingManager, execution_manager: ExecutionManager):
         self.model_manager = model_manager
         self.training_manager = training_manager
         self.execution_manager = execution_manager
         self.active_training = None
         self.training_definition = None
-        self.refresh_callback = refresh_callback
 
         super().__init__(rows=6, cols=2)
 
@@ -52,17 +52,19 @@ class TrainingEditorView(SparseGridLayout):
 
         self.add_entry(Label(text="Test Split:", font_size='15sp', color=[0., 0., 0., 1.]), position=(2, 0), shape=(1, 1))
         self.test_split = TextInput(text="", multiline=False)
-        self.test_split.bind(focus=self.update_learning_rate)
+        self.test_split.bind(focus=self.update_test_split)
         self.add_entry(self.test_split, position=(2, 1), shape=(1, 1), padding_x=(0, 0.1), padding_y=(0.03, 0.03))
 
         self.add_entry(Label(text="Iterations:", font_size='15sp', color=[0., 0., 0., 1.]), position=(1, 0), shape=(1, 1))
         self.iterations = TextInput(text="", multiline=False)
-        self.iterations.bind(focus=self.update_learning_rate)
+        self.iterations.bind(focus=self.update_iterations)
         self.add_entry(self.iterations, position=(1, 1), shape=(1, 1), padding_x=(0, 0.1), padding_y=(0.03, 0.03))
 
         self.start_training_button = Button(text="Start Training")
         self.start_training_button.bind(on_press=self.start_training)
         self.add_entry(self.start_training_button, position=(0, 0.6), shape=(1, 1), padding_x=(0, 0.1), padding_y=(0.03, 0.03))
+
+        EventListener.add_listener("refresh_training_models", self.update_model_entries)
 
         self.float_regex = re.compile(r"^\d+(.\d+)?$")
         self.int_regex = re.compile(r"^\d+$")
@@ -93,7 +95,7 @@ class TrainingEditorView(SparseGridLayout):
             self.hide_entry(self.start_training_button)
         else:
             self.show_entry(self.start_training_button)
-        self.start_training_button.disabled = self.active_training in self.execution_manager.active_models
+        self.start_training_button.disabled = self.active_training in self.execution_manager.active_workers
 
     def update_model_id(self, label, touch):
         if label.collide_point(*touch.pos):
@@ -101,9 +103,7 @@ class TrainingEditorView(SparseGridLayout):
             self.models_button.text = label.text
             if label.text != self.training_definition.model_id:
                 self.training_definition.model_id = label.text
-                self.training_manager.update_training(self.active_training, self.training_definition)
-                self.update_start_button()
-                self.refresh_callback()
+                self.update_definition()
 
     def update_learning_rate(self, instance, value):
         if not value:
@@ -113,9 +113,7 @@ class TrainingEditorView(SparseGridLayout):
             new_val = float(clean)
             if new_val != self.training_definition.learning_rate:
                 self.training_definition.learning_rate = new_val
-                self.training_manager.update_training(self.active_training, self.training_definition)
-                self.update_start_button()
-                self.refresh_callback()
+                self.update_definition()
 
     def update_test_split(self, instance, value):
         if not value:
@@ -125,9 +123,7 @@ class TrainingEditorView(SparseGridLayout):
             new_val = float(clean)
             if new_val != self.training_definition.test_split:
                 self.training_definition.test_split = new_val
-                self.training_manager.update_training(self.active_training, self.training_definition)
-                self.update_start_button()
-                self.refresh_callback()
+                self.update_definition()
 
     def update_iterations(self, instance, value):
         if not value:
@@ -137,9 +133,12 @@ class TrainingEditorView(SparseGridLayout):
             new_val = int(clean)
             if new_val != self.training_definition.iterations:
                 self.training_definition.iterations = new_val
-                self.training_manager.update_training(self.active_training, self.training_definition)
-                self.update_start_button()
-                self.refresh_callback()
+                self.update_definition()
+
+    def update_definition(self):
+        self.training_manager.update_training(self.active_training, self.training_definition)
+        self.update_start_button()
+        EventListener.trigger_event("refresh_training_view")
 
     def start_training(self, instance):
         instance.disabled = True

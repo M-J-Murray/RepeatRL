@@ -43,7 +43,7 @@ class TrainingEntry(SparseGridLayout):
 
     def open_training(self):
         self.update_color(self.background, (0.3, 0.3, 0.6, 1))
-        self.open_callback()
+        self.open_callback(self.training_id)
 
     def on_label_press(self, touch):
         if self.training_label.collide_point(*touch.pos):
@@ -59,7 +59,7 @@ class TrainingEntry(SparseGridLayout):
             self.remove_entry(self.training_label)
             if new_id != self.training_id:
                 self.training_manager.rename_training(self.training_id, new_id)
-                self.rename_callback(self.training_id, self.new_id)
+                self.rename_callback(self.training_id, new_id)
                 self.training_id = new_id
             self.training_label = Label(text=self.training_id, halign="left", valign="middle", padding_x=10)
             self.training_label.bind(size=self.training_label.setter('text_size'))

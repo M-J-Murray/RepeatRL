@@ -4,6 +4,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 
 from app.training.model.model_manager import ModelManager
+from app.event_listener import EventListener
 
 
 class ModelEntry(SparseGridLayout):
@@ -43,17 +44,17 @@ class ModelEntry(SparseGridLayout):
 
     def open_model(self):
         self.update_color(self.background, (0.3, 0.3, 0.6, 1))
-        self.open_callback()
+        self.open_callback(self.model_id)
 
     def on_label_press(self, touch):
         if self.model_label.collide_point(*touch.pos):
             self.remove_entry(self.model_label)
             self.model_label = TextInput(text=self.model_id, multiline=False)
-            self.model_label.bind(focus=self.update_model_label)
+            self.model_label.bind(focus=self.rename_model)
             self.model_label.on_touch_down(touch)
             self.add_entry(self.model_label, position=(0, 0), shape=(1, 3), padding_x=(0.01, 0.01), padding_y=(0.05, 0.05))
 
-    def update_model_label(self, instance, value):
+    def rename_model(self, instance, value):
         if not value:
             new_id = self.model_label.text
             self.remove_entry(self.model_label)
@@ -75,3 +76,4 @@ class ModelEntry(SparseGridLayout):
         self.model_manager.delete_model(self.model_id)
         self.parent.remove_widget(self)
         self.delete_callback(self.model_id)
+        EventListener.trigger_event("refresh_training_models")

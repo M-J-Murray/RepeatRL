@@ -46,9 +46,8 @@ class RepeatApp(App):
 
         layout = SparseGridLayout(rows=1, cols=4)
         layout.add_entry(AudioView(self.audio_manager), position=(0, 0), shape=(1, 1))
-        training_view = TrainingView(self.audio_manager, self.model_manager, self.training_manager, self.execution_manager)
-        layout.add_entry(training_view, position=(0, 2), shape=(1, 1))
-        layout.add_entry(ModelView(self.model_manager, training_view.training_editor.update_model_entries), position=(0, 1), shape=(1, 1))
-        layout.add_entry(TrainedModelView(self.audio_manager, self.model_manager, self.training_manager, self.trained_model_manager), position=(0, 3), shape=(1, 1))
+        layout.add_entry(ModelView(self.model_manager), position=(0, 1), shape=(1, 1))
+        layout.add_entry(TrainingView(self.audio_manager, self.model_manager, self.training_manager, self.execution_manager), position=(0, 2), shape=(1, 1))
+        layout.add_entry(TrainedModelView(self.audio_manager, self.execution_manager, self.trained_model_manager), position=(0, 3), shape=(1, 1))
 
         return layout

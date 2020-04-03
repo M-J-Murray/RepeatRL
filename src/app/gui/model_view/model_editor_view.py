@@ -3,13 +3,13 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from app.training.model.model_manager import ModelManager
 import re
+from app.event_listener import EventListener
 
 
 class ModelEditorView(SparseGridLayout):
 
-    def __init__(self, model_manager: ModelManager, refresh_callback):
+    def __init__(self, model_manager: ModelManager):
         self.model_manager = model_manager
-        self.refresh_callback = refresh_callback
         self.active_model = None
         self.model_definition = None
 
@@ -132,4 +132,4 @@ class ModelEditorView(SparseGridLayout):
 
     def update_model(self):
         self.model_manager.update_model(self.active_model, self.model_definition)
-        self.refresh_callback()
+        EventListener.trigger_event("refresh_model_definitions")

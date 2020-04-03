@@ -5,10 +5,10 @@ from kivy.uix.gridlayout import GridLayout
 from app.gui.training_view.training_editor_view import TrainingEditorView
 from app.gui.training_view.training_entry import TrainingEntry
 
+from app.event_listener import EventListener
+
 from kivy.uix.label import Label
 from kivy.uix.button import Button
-
-from functools import partial
 
 
 class TrainingView(SparseGridLayout):
@@ -45,7 +45,8 @@ class TrainingView(SparseGridLayout):
         self.editor_controls.add_entry(self.close_button, position=(0, 2), shape=(1, 1), padding_x=(0.01, 0.01), padding_y=(0.1, 0.1))
         self.editor_controls.hide_entry(self.close_button)
 
-        self.training_editor = TrainingEditorView(self.model_manager, self.training_manager, self.execution_manager, self.update_training_definitions)
+        self.training_editor = TrainingEditorView(self.model_manager, self.training_manager, self.execution_manager)
+        EventListener.add_listener("refresh_training_view", self.update_training_definitions)
         self.add_entry(self.training_editor, position=(0, 0), shape=(10, 1))
         self.hide_entry(self.training_editor)
 
@@ -59,7 +60,8 @@ class TrainingView(SparseGridLayout):
         self.training_widget.clear_widgets()
         for training_id in self.training_manager.all_training_ids():
             is_active = training_id == self.training_editor.active_training
-            training_entry = TrainingEntry(training_id, is_active, self.training_manager, partial(self.open_training, training_id), self.check_hide_save, self.check_hide_delete, self.check_update_editor_name)
+            training_entry = TrainingEntry(training_id, is_active, self.training_manager, self.open_training, self.check_hide_save, self.check_hide_delete,
+                                           self.check_update_editor_name)
             self.training_widget.add_widget(training_entry)
 
     def check_update_editor_name(self, old_id, new_id):
